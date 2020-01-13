@@ -56,9 +56,10 @@ public class Exam06 {
 		int number = 0;
 		String name = null;
 		Connection con = null;
-		Statement stmt = null;
+//		Statement stmt = null;
 		PreparedStatement pre = null;
 		ResultSet res = null;
+		PreparedStatement pre2 = null;
 		
 		
 		System.out.println("어느방에 체크인 하시겠습니다.");
@@ -80,9 +81,10 @@ public class Exam06 {
 		String sql = " insert into hotel_mng " + " (room_num, guest_name) " + " values " + " (?, ?) ";
 		String sql2 = " select * from hotel_mng where room_num = " + number;
 		
-		stmt = con.createStatement();
+//		stmt = con.createStatement();
+		pre2 = con.prepareStatement(sql2);
 		pre = con.prepareStatement(sql);
-		res = stmt.executeQuery(sql2);
+		res = pre2.executeQuery();
 		
 		while(res.next()) {
 			if(res.getInt("room_num") == number) {
@@ -95,8 +97,7 @@ public class Exam06 {
 		pre.setInt(1, number);
 		pre.setString(2, name);
 		
-		int cnt = pre.executeUpdate();
-		if(cnt == 1) {
+		if(pre.executeUpdate() == 1) {
 			System.out.println(name + "님 체크인 되었습니다.");	
 		}
 		
@@ -107,7 +108,8 @@ public class Exam06 {
 			e.printStackTrace();
 		}finally {
 			if(res != null) try {res.close();}catch(SQLException e2) {}
-			if(stmt != null) try {stmt.close();}catch(SQLException e2) {}
+//			if(stmt != null) try {stmt.close();}catch(SQLException e2) {}
+			if(pre2 != null) try {pre2.close();}catch(SQLException e2) {}
 			if(pre != null) try {pre.close();}catch(SQLException e2) {}
 			if(con != null) try {con.close();}catch(SQLException e2) {}
 		}
@@ -141,7 +143,7 @@ public class Exam06 {
 			System.out.println(number + "방에는 체크인한 사람이 없습니다.");
 			return;
 		}else {
-			System.out.println("체크아웃 되었습니다.");
+			System.out.println(number + "방이 체크아웃 되었습니다.");
 		}
 		
 		}catch(ClassNotFoundException e){

@@ -3,6 +3,7 @@ package kr.or.ddit.basic;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -23,6 +24,7 @@ public class T03_JdbcTest {
 		Connection conn = null;
 		Statement stmt = null;
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		
 		try {
 			Class.forName("oracle.jdbc.driver.OracleDriver");
@@ -35,7 +37,7 @@ public class T03_JdbcTest {
 			conn = DriverManager.getConnection(url, userId, password);
 			
 			// statement 객체를 이용한 자료 추가 방법
-			stmt = conn.createStatement();
+			// stmt = conn.createStatement();
 			
 //			String sql = "insert into lprod " + " (lprod_id, lprod_gu, lprod_nm) " + " values(101, 'N101', '농산물')";
 //			
@@ -79,7 +81,7 @@ public class T03_JdbcTest {
 			// PreparedStatement객체를 이용한 자료 추가 방법
 			
 			//SQL문작성(데이터가 들어갈 자리에 물음표(?)를 넣는다.)
-			String sql = "insert into lprod" + " (lprod_id, lprod_gu, lprod_nm) " + " values(?, ?, ?)";
+			/*String sql = "insert into lprod" + " (lprod_id, lprod_gu, lprod_nm) " + " values(?, ?, ?)";
 			
 			//PreparedStatement객체를 생성할때 SQL문을 넣어서 생성한다.
 			pstmt = conn.prepareStatement(sql);
@@ -109,7 +111,34 @@ public class T03_JdbcTest {
 			
 			cnt = pstmt.executeUpdate();
 			
-			System.out.println("세번째 반환값 : " + cnt);
+			System.out.println("세번째 반환값 : " + cnt); */
+			
+
+//----------------------------------------------------------------------------------------------------
+			///////////////SQL Inject 예제//////////////
+//----------------------------------------------------------------------------------------------------
+			
+//			stmt = conn.createStatement();
+			
+			String lprod_gu = "' or 1=1 --"; // 사용자 입력값
+			
+			String sql = " select * from lprod " + " where lprod_gu = '" + lprod_gu + "' and lprod_nm = '축산물'";
+			
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, lprod_gu);
+			
+			System.out.println("실행한 쿼리 : " + sql);
+			
+			rs = pstmt.executeQuery();
+			
+			// ResultSet객체에 저장된 자료를 출력한다.
+			System.out.println("------실행 결과 ----------");
+			while(rs.next()) {
+				System.out.println("lprod_id : " + rs.getInt("lprod_id"));
+				System.out.println("lprod_gu : " + rs.getString("lprod_gu"));
+				System.out.println("lprod_nm : " + rs.getString("lprod_nm"));
+				System.out.println("----------------------");
+			}
 			
 			System.out.println("작업끝 ...");
 			
@@ -120,6 +149,8 @@ public class T03_JdbcTest {
 			e.printStackTrace();
 		} finally {
 			//사용했던 자료 반납
+			if(rs != null) try {rs.close();} 
+			catch(SQLException e2) {}
 			if(pstmt != null) try {pstmt.close();} 
 					catch(SQLException e2) {}
 			if(stmt != null) try {stmt.close();} 
